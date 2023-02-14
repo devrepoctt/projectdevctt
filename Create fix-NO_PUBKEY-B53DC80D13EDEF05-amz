@@ -1,0 +1,44 @@
+#!/bin/bash
+
+echo "Trying to resolve GPG error: https://packages.cloud.google.com/apt kubernetes-xenial InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY B53DC80D13EDEF05"
+
+# Option 1: Add the missing GPG key
+echo "Trying option 1: Add the missing GPG key"
+sudo rpm --import https://packages.cloud.google.com/yum/doc/yum-key.gpg
+if [ $? -eq 0 ]; then
+  echo "Successfully added the missing GPG key."
+  sudo yum update
+  if [ $? -eq 0 ]; then
+    echo "Successfully updated the repository."
+    exit 0
+  fi
+fi
+
+# Option 2: Update the repository
+echo "Trying option 2: Update the repository"
+sudo yum update
+if [ $? -eq 0 ]; then
+  echo "Successfully updated the repository."
+  exit 0
+fi
+
+# Option 3: Verify the package index files
+echo "Trying option 3: Verify the package index files"
+sudo yum update --skip-broken
+if [ $? -eq 0 ]; then
+  echo "Successfully verified the package index files."
+  exit 0
+fi
+
+# Option 4: Remove and add the repository again
+echo "Trying option 4: Remove and add the repository again"
+sudo yum-config-manager --disable kubernetes
+sudo yum-config-manager --enable kubernetes
+sudo yum update
+if [ $? -eq 0 ]; then
+  echo "Successfully removed and added the repository."
+  exit 0
+fi
+
+echo "Failed to resolve the error. Please try other methods or consult the system administrator."
+exit 1
