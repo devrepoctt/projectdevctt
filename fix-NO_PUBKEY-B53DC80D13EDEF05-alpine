@@ -1,0 +1,32 @@
+#!/bin/sh
+
+echo "Trying to resolve GPG error: NO_PUBKEY B53DC80D13EDEF05"
+
+# Option 1: Add the missing GPG key
+echo "Trying option 1: Add the missing GPG key"
+wget -q https://packages.cloud.google.com/yum/doc/yum-key.gpg
+sudo apk add yum-key.gpg
+if [ $? -eq 0 ]; then
+  echo "Successfully added the missing GPG key."
+  sudo apk update
+  if [ $? -eq 0 ]; then
+    echo "Successfully updated the repository."
+    exit 0
+  fi
+fi
+
+# Option 2: Update the repository
+echo "Trying option 2: Update the repository"
+sudo apk update
+if [ $? -eq 0 ]; then
+  echo "Successfully updated the repository."
+  exit 0
+fi
+
+# Option 3: Verify the package index files
+echo "Trying option 3: Verify the package index files"
+sudo apk update --no-cache
+if [ $? -eq 0 ]; then
+  echo "Successfully verified the package index files."
+  exit 0
+fi
